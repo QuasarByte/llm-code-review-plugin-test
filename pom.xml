@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.quasarbyte.llmcodereview</groupId>
+    <artifactId>llm-code-review-plugin-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Default baseUrl value -->
+        <baseUrl>http://127.0.0.1:1234/v1/</baseUrl>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.quasarbyte.llm.codereview</groupId>
+                <artifactId>llm-code-review-maven-plugin</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+                <configuration>
+                    <reviewParameter>
+                        <reviewName>Find critical defects in code</reviewName>
+                        <llmChatCompletionConfiguration>
+                            <model>qwen3-8b</model>
+                        </llmChatCompletionConfiguration>
+                        <systemPrompts>
+                            <systemPrompt>You are code review assistant.</systemPrompt>
+                        </systemPrompts>
+                        <reviewPrompts>
+                            <reviewPrompt>Please review all these Java files</reviewPrompt>
+                            <reviewPrompt>Comment style: Human like, friendly, natural, and professional tone; ideal for PRs, reports, and communication.</reviewPrompt>
+                        </reviewPrompts>
+                        <targets>
+                            <target>
+                                <fileGroups>
+                                    <fileGroup>
+                                        <paths>
+                                            <path>src/main/**.java</path>
+                                        </paths>
+                                        <rules>
+                                            <rule>
+                                                <code>001</code>
+                                                <description>Find possible java.lang.ArrayIndexOutOfBoundsException</description>
+                                                <severity>critical</severity>
+                                            </rule>
+                                        </rules>
+                                    </fileGroup>
+                                </fileGroups>
+                            </target>
+                        </targets>
+                    </reviewParameter>
+                    <llmClientConfiguration>
+                        <baseUrl>${baseUrl}</baseUrl>
+                        <apiKey>demo</apiKey>
+                    </llmClientConfiguration>
+                    <buildFailureConfiguration>
+                        <warningThreshold>10</warningThreshold>
+                        <criticalThreshold>1</criticalThreshold>
+                    </buildFailureConfiguration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>llm-code-review</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>ollama</id>
+            <properties>
+                <baseUrl>http://127.0.0.1:11434/v1/</baseUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>lm-studio</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <baseUrl>http://127.0.0.1:1234/v1/</baseUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>lm-studio-docker</id>
+            <properties>
+                <baseUrl>http://host.docker.internal:1234/v1/</baseUrl>
+            </properties>
+        </profile>
+    </profiles>
+</project>
